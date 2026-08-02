@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Research Copilot",
+  "version": "1.0.0",
+  "description": "Save papers from arXiv (and other sites) straight into your Research Copilot library.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Research Copilot"
+  },
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": [
+    "http://localhost:8000/*",
+    "https://arxiv.org/*"
+  ]
+}

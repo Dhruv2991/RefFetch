@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    body {
+      width: 300px;
+      font-family: -apple-system, system-ui, sans-serif;
+      background: #0b0e14;
+      color: #e6e8eb;
+      margin: 0;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 14px;
+      margin: 0 0 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #status {
+      font-size: 12px;
+      color: #9aa0a6;
+      margin-bottom: 10px;
+      word-break: break-word;
+      max-height: 60px;
+      overflow-y: auto;
+    }
+    button {
+      width: 100%;
+      background: #1d4ed8;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1e40af;
+    }
+    button:disabled {
+      background: #374151;
+      cursor: not-allowed;
+    }
+    .msg {
+      font-size: 12px;
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 6px;
+    }
+    .msg.success { background: #064e3b; color: #6ee7b7; }
+    .msg.error { background: #450a0a; color: #fca5a5; }
+    .msg.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h1>📚 Research Copilot</h1>
+  <div id="status">Detecting paper on this page...</div>
+  <button id="saveBtn" disabled>Save to library</button>
+  <div id="msg" class="msg hidden"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
