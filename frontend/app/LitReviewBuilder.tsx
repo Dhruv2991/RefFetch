@@ -10,6 +10,7 @@ import {
   updateSection,
   draftSection,
 } from "@/lib/api";
+import { downloadReviewReport } from "@/lib/download";
 
 export default function LitReviewBuilder({ papers }: { papers: Paper[] }) {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -74,7 +75,7 @@ export default function LitReviewBuilder({ papers }: { papers: Paper[] }) {
   return (
     <div className="flex h-full">
       {/* Reviews list */}
-      <div className="w-56 border-r border-gray-800 p-3 space-y-2 overflow-y-auto">
+      <div className="w-56 border-r border-hairline p-3 space-y-2 overflow-y-auto">
         <div className="flex gap-1">
           <input
             className="flex-1 bg-ink-card rounded px-2 py-1 text-xs"
@@ -111,7 +112,13 @@ export default function LitReviewBuilder({ papers }: { papers: Paper[] }) {
       {/* Sections + editor */}
       {activeReview ? (
         <div className="flex-1 flex overflow-hidden">
-          <div className="w-40 border-r border-gray-800 p-3 space-y-1 overflow-y-auto">
+          <div className="w-40 border-r border-hairline p-3 space-y-1 overflow-y-auto">
+            <button
+              onClick={() => downloadReviewReport(activeReview.title, activeReview.sections)}
+              className="w-full text-xs px-2 py-1.5 rounded bg-gold/15 text-gold-bright hover:bg-gold/25 transition-colors mb-2"
+            >
+              ↓ Full report
+            </button>
             {activeReview.sections.map((s) => (
               <button
                 key={s.id}
@@ -129,7 +136,7 @@ export default function LitReviewBuilder({ papers }: { papers: Paper[] }) {
           <div className="flex-1 flex flex-col p-3 overflow-hidden">
             {activeSection ? (
               <>
-                <h3 className="text-sm font-semibold mb-2">{activeSection.name}</h3>
+                <h3 className="font-serif text-base font-semibold mb-2 text-paper">{activeSection.name}</h3>
 
                 <div className="mb-2">
                   <p className="text-xs text-paper-faint mb-1">Draft from papers:</p>

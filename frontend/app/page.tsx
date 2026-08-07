@@ -5,6 +5,8 @@ import { Paper, fetchPapers, uploadPaper, askQuestion, comparePapers, queryMemor
 import PaperDetailsPanel from "./PaperDetailsPanel";
 import ResearchGraph from "./ResearchGraph";
 import LitReviewBuilder from "./LitReviewBuilder";
+import Markdown from "./Markdown";
+import { downloadComparisonReport, downloadMemoryReport } from "@/lib/download";
 
 const NAV_ITEMS: { key: "review" | "graph" | "memory"; label: string; activeClass: string }[] = [
   { key: "review", label: "Lit Review", activeClass: "bg-gold/20 text-gold-bright" },
@@ -297,8 +299,17 @@ export default function Home() {
                 {memoryError && <p className="text-rose text-sm">{memoryError}</p>}
                 {memoryAnswer && (
                   <>
-                    <div className="whitespace-pre-wrap text-sm bg-ink-card rounded-lg p-4 mb-3 leading-relaxed">
-                      {memoryAnswer}
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-paper-faint">Answer</p>
+                      <button
+                        onClick={() => downloadMemoryReport(memoryQuestion, memoryAnswer, memoryPapers)}
+                        className="text-xs px-2.5 py-1 rounded bg-teal/15 text-teal hover:bg-teal/25 transition-colors flex items-center gap-1"
+                      >
+                        ↓ Download report
+                      </button>
+                    </div>
+                    <div className="bg-ink-card rounded-lg p-4 mb-3">
+                      <Markdown>{memoryAnswer}</Markdown>
                     </div>
                     {memoryPapers.length > 0 && (
                       <div>
@@ -321,12 +332,29 @@ export default function Home() {
             </div>
           ) : view === "compare" ? (
             <div className="flex-1 overflow-y-auto p-4">
-              <h2 className="font-serif text-lg font-semibold mb-3 text-paper">Comparison</h2>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-serif text-lg font-semibold text-paper">
+                  <span className="highlight-mark">Comparison</span>
+                </h2>
+                {comparisonResult && (
+                  <button
+                    onClick={() =>
+                      downloadComparisonReport(
+                        papers.filter((p) => selectedForCompare.includes(p.id)).map((p) => p.title),
+                        comparisonResult
+                      )
+                    }
+                    className="text-xs px-2.5 py-1 rounded bg-rose/15 text-rose hover:bg-rose/25 transition-colors"
+                  >
+                    ↓ Download report
+                  </button>
+                )}
+              </div>
               {comparing && <p className="text-paper-faint text-sm">Comparing papers...</p>}
               {compareError && <p className="text-rose text-sm">{compareError}</p>}
               {comparisonResult && (
-                <div className="whitespace-pre-wrap text-sm bg-ink-card rounded-lg p-4 leading-relaxed">
-                  {comparisonResult}
+                <div className="bg-ink-card rounded-lg p-4">
+                  <Markdown>{comparisonResult}</Markdown>
                 </div>
               )}
             </div>
@@ -346,11 +374,11 @@ export default function Home() {
                 {chatLog.map((m, i) => (
                   <div
                     key={i}
-                    className={`p-3 rounded-lg max-w-[85%] text-sm whitespace-pre-wrap leading-relaxed ${
-                      m.role === "user" ? "bg-gold/20 text-paper ml-auto" : "bg-ink-card text-paper"
+                    className={`p-3 rounded-lg max-w-[85%] text-sm leading-relaxed ${
+                      m.role === "user" ? "bg-gold/20 text-paper ml-auto whitespace-pre-wrap" : "bg-ink-card text-paper"
                     }`}
                   >
-                    {m.content}
+                    {m.role === "assistant" ? <Markdown>{m.content}</Markdown> : m.content}
                   </div>
                 ))}
                 {asking && <div className="text-paper-faint text-sm">Thinking...</div>}
