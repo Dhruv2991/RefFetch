@@ -1,13 +1,24 @@
 import os
+import time
 
 import httpx
 from dotenv import load_dotenv
+from fastapi import HTTPException
 
 load_dotenv()
 
+AI_PROVIDER = os.getenv("AI_PROVIDER", "groq").lower()  # "groq" or "ollama"
+
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+
+# OLLAMA_URL should be your tunnel's base URL, e.g. https://xxxx.trycloudflare.com
+# or https://xxxx.ngrok-free.app — no trailing slash.
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
+
+MAX_RETRIES = 3
 
 
 def _groq_chat(messages: list[dict], system: str | None = None) -> str:
@@ -16,14 +27,64 @@ def _groq_chat(messages: list[dict], system: str | None = None) -> str:
         payload_messages.append({"role": "system", "content": system})
     payload_messages.extend(messages)
 
-    response = httpx.post(
-        GROQ_URL,
-        headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
-        json={"model": MODEL, "messages": payload_messages, "max_tokens": 1000},
-        timeout=60.0,
-    )
-    response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
+    for attempt in range(MAX_RETRIES):
+        response = httpx.post(
+            GROQ_URL,
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+            json={"model": GROQ_MODEL, "messages": payload_messages, "max_tokens": 1000},
+            timeout=60.0,
+        )
+
+        if response.status_code == 429:
+            # Rate limited — Groq tells us how long to wait via this header,
+            # fall back to exponential backoff if it's missing.
+            retry_after = float(response.headers.get("retry-after", 2 ** attempt))
+            if attempt < MAX_RETRIES - 1:
+                time.sleep(min(retry_after, 10))
+                continue
+            raise HTTPException(
+                429,
+                "Groq's free-tier rate limit was hit and retries were exhausted. "
+                "Wait a minute and try again, or space out requests (e.g. avoid running "
+                "Full Report right after uploading several papers).",
+            )
+
+        response.raise_for_status()
+        return response.json()["choices"][0]["message"]["content"]
+
+    raise HTTPException(500, "Groq request failed unexpectedly")
+
+
+def _ollama_chat(messages: list[dict], system: str | None = None) -> str:
+    payload_messages = []
+    if system:
+        payload_messages.append({"role": "system", "content": system})
+    payload_messages.extend(messages)
+
+    try:
+        response = httpx.post(
+            f"{OLLAMA_URL}/api/chat",
+            json={"model": OLLAMA_MODEL, "messages": payload_messages, "stream": False},
+            timeout=120.0,
+        )
+        response.raise_for_status()
+    except httpx.RequestError:
+        raise HTTPException(
+            502,
+            "Could not reach your Ollama tunnel. Make sure your laptop is on, Ollama is "
+            "running, and the tunnel is still active — tunnel URLs often expire or change "
+            "when restarted, in which case update OLLAMA_URL in Render's environment vars.",
+        )
+
+    return response.json()["message"]["content"]
+
+
+def _chat(messages: list[dict], system: str | None = None) -> str:
+    """Single entry point used by every AI feature — routes to whichever
+    provider AI_PROVIDER is set to, so switching is just one env var."""
+    if AI_PROVIDER == "ollama":
+        return _ollama_chat(messages, system)
+    return _groq_chat(messages, system)
 
 
 def summarize_paper(full_text: str) -> str:
@@ -39,7 +100,7 @@ Produce a concise summary with these sections:
 Paper text (may be truncated):
 {full_text[:8000]}
 """
-    return _groq_chat([{"role": "user", "content": prompt}])
+    return _chat([{"role": "user", "content": prompt}])
 
 
 def synthesize_memory(question: str, paper_summaries: list[dict], context_chunks: list[dict]) -> str:
@@ -71,7 +132,7 @@ If nothing in the library is relevant to the question, say so plainly instead
 of guessing.
 """
 
-    return _groq_chat([{"role": "user", "content": question}], system=system)
+    return _chat([{"role": "user", "content": question}], system=system)
 
 
 def draft_review_section(section_name: str, papers: list[dict], instructions: str | None) -> str:
@@ -98,7 +159,7 @@ Source papers:
 
 {papers_block}
 """
-    return _groq_chat([{"role": "user", "content": prompt}])
+    return _chat([{"role": "user", "content": prompt}])
 
 
 def answer_with_context(question: str, context_chunks: list[str], chat_history: list[dict]) -> str:
@@ -118,4 +179,4 @@ Sources:
 """
 
     messages = chat_history + [{"role": "user", "content": question}]
-    return _groq_chat(messages, system=system)
+    return _chat(messages, system=system)

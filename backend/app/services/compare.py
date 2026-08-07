@@ -1,4 +1,4 @@
-from app.services.ai import _groq_chat
+from app.services.ai import _chat
 
 
 def compare_papers(papers: list[dict]) -> str:
@@ -33,4 +33,4 @@ Papers:
 
 {papers_block}
 """
-    return _groq_chat([{"role": "user", "content": prompt}])
+    return _chat([{"role": "user", "content": prompt}])
