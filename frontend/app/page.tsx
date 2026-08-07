@@ -6,7 +6,8 @@ import PaperDetailsPanel from "./PaperDetailsPanel";
 import ResearchGraph from "./ResearchGraph";
 import LitReviewBuilder from "./LitReviewBuilder";
 import Markdown from "./Markdown";
-import { downloadComparisonReport, downloadMemoryReport } from "@/lib/download";
+import { downloadComparisonReport, downloadMemoryReport, downloadFullReport, PdfSection } from "@/lib/download";
+import { fetchFullReport } from "@/lib/api";
 
 const NAV_ITEMS: { key: "review" | "graph" | "memory"; label: string; activeClass: string }[] = [
   { key: "review", label: "Lit Review", activeClass: "bg-gold/20 text-gold-bright" },
@@ -18,7 +19,7 @@ export default function Home() {
   const [papers, setPapers] = useState<Paper[]>([]);
   const [uploading, setUploading] = useState(false);
   const [activePaperId, setActivePaperId] = useState<string | undefined>();
-  const [view, setView] = useState<"chat" | "details" | "compare" | "memory" | "graph" | "review">("chat");
+  const [view, setView] = useState<"chat" | "details" | "compare" | "memory" | "graph" | "review" | "fullreport">("chat");
   const [question, setQuestion] = useState("");
   const [chatLog, setChatLog] = useState<{ role: string; content: string }[]>([]);
   const [asking, setAsking] = useState(false);
@@ -35,6 +36,27 @@ export default function Home() {
   const [memoryAnswer, setMemoryAnswer] = useState<string | null>(null);
   const [memoryPapers, setMemoryPapers] = useState<string[]>([]);
   const [memoryError, setMemoryError] = useState<string | null>(null);
+
+  const [fullReport, setFullReport] = useState<{ title: string; subtitle: string; sections: PdfSection[] } | null>(
+    null
+  );
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
+
+  const runFullReport = async () => {
+    setView("fullreport");
+    setReportLoading(true);
+    setReportError(null);
+    setFullReport(null);
+    try {
+      const report = await fetchFullReport();
+      setFullReport(report);
+    } catch (e: any) {
+      setReportError(e.message || "Failed to generate report");
+    } finally {
+      setReportLoading(false);
+    }
+  };
 
   const loadPapers = () => fetchPapers().then(setPapers).catch(console.error);
 
@@ -121,6 +143,16 @@ export default function Home() {
               <span className="highlight-mark">Research Copilot</span>
             </h1>
           </div>
+
+          <button
+            onClick={runFullReport}
+            className="w-full bg-gradient-to-r from-gold to-gold-bright text-ink font-semibold px-4 py-3 rounded-lg text-sm hover:opacity-90 transition-opacity shadow-lg shadow-gold/10"
+          >
+            ✦ Generate Full Analysis Report
+          </button>
+          <p className="text-[11px] text-paper-faint -mt-2">
+            Runs a complete analysis across your whole library — overview, synthesis, and gaps — as one PDF.
+          </p>
 
           <nav className="flex flex-wrap gap-1.5">
             {NAV_ITEMS.map((item) => (
@@ -256,7 +288,48 @@ export default function Home() {
             </div>
           )}
 
-          {view === "review" ? (
+          {view === "fullreport" ? (
+          <div className="flex-1 overflow-y-auto p-6">
+            {reportLoading && (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-paper-muted text-sm">Analyzing your entire library — summaries, cross-paper synthesis, and gaps...</p>
+                <p className="text-paper-faint text-xs mt-1">This can take 20-40 seconds for larger libraries.</p>
+              </div>
+            )}
+            {reportError && <p className="text-rose text-sm">{reportError}</p>}
+            {fullReport && (
+              <>
+                <div className="flex items-start justify-between mb-1">
+                  <div>
+                    <h2 className="font-serif text-2xl font-semibold text-paper">
+                      <span className="highlight-mark">{fullReport.title}</span>
+                    </h2>
+                    <p className="text-paper-faint text-sm mt-1">{fullReport.subtitle}</p>
+                  </div>
+                  <button
+                    onClick={() => downloadFullReport(fullReport.title, fullReport.subtitle, fullReport.sections)}
+                    className="shrink-0 bg-gold hover:bg-gold-bright text-ink px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    ↓ Download PDF
+                  </button>
+                </div>
+                <div className="mt-6 space-y-6">
+                  {fullReport.sections.map((s, i) => (
+                    <div key={i} className="bg-ink-card rounded-lg p-5">
+                      {s.heading && (
+                        <h3 className="font-serif text-lg font-semibold text-gold-bright mb-3 pb-2 border-b border-hairline">
+                          {s.heading}
+                        </h3>
+                      )}
+                      <Markdown>{s.body}</Markdown>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        ) : view === "review" ? (
             <div className="flex-1 overflow-hidden">
               <LitReviewBuilder papers={papers} />
             </div>
@@ -305,7 +378,7 @@ export default function Home() {
                         onClick={() => downloadMemoryReport(memoryQuestion, memoryAnswer, memoryPapers)}
                         className="text-xs px-2.5 py-1 rounded bg-teal/15 text-teal hover:bg-teal/25 transition-colors flex items-center gap-1"
                       >
-                        ↓ Download report
+                        ↓ Download PDF
                       </button>
                     </div>
                     <div className="bg-ink-card rounded-lg p-4 mb-3">
@@ -346,7 +419,7 @@ export default function Home() {
                     }
                     className="text-xs px-2.5 py-1 rounded bg-rose/15 text-rose hover:bg-rose/25 transition-colors"
                   >
-                    ↓ Download report
+                    ↓ Download PDF
                   </button>
                 )}
               </div>

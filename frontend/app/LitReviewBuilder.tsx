@@ -117,7 +117,7 @@ export default function LitReviewBuilder({ papers }: { papers: Paper[] }) {
               onClick={() => downloadReviewReport(activeReview.title, activeReview.sections)}
               className="w-full text-xs px-2 py-1.5 rounded bg-gold/15 text-gold-bright hover:bg-gold/25 transition-colors mb-2"
             >
-              ↓ Full report
+              ↓ Full report (PDF)
             </button>
             {activeReview.sections.map((s) => (
               <button

@@ -11,7 +11,7 @@ import {
   deleteHighlight,
 } from "@/lib/api";
 import Markdown from "./Markdown";
-import { downloadTextFile } from "@/lib/download";
+import { downloadPaperReport } from "@/lib/download";
 
 export default function PaperDetailsPanel({
   paper,
@@ -85,19 +85,19 @@ export default function PaperDetailsPanel({
         <div className="flex items-start justify-between gap-2 mb-1">
           <h2 className="font-serif font-semibold text-lg text-paper">{paper.title}</h2>
           <button
-            onClick={() => {
-              const parts = [`# ${paper.title}`];
-              if (paper.authors || paper.year) parts.push(`*${paper.authors || "Unknown author"} (${paper.year || "n.d."})*`);
-              if (paper.summary) parts.push(`## Summary\n\n${paper.summary}`);
-              if (paper.notes) parts.push(`## Notes\n\n${paper.notes}`);
-              if (highlights.length > 0) {
-                parts.push(`## Highlights\n\n${highlights.map((h) => `> ${h.excerpt}`).join("\n\n")}`);
-              }
-              downloadTextFile(`${paper.title.slice(0, 50).replace(/[^a-z0-9]+/gi, "-")}.md`, parts.join("\n\n"));
-            }}
+            onClick={() =>
+              downloadPaperReport(
+                paper.title,
+                paper.authors,
+                paper.year,
+                paper.summary,
+                paper.notes,
+                highlights.map((h) => h.excerpt)
+              )
+            }
             className="shrink-0 text-xs px-2.5 py-1 rounded bg-gold/15 text-gold-bright hover:bg-gold/25 transition-colors"
           >
-            ↓ Download
+            ↓ Download PDF
           </button>
         </div>
         {paper.summary && (

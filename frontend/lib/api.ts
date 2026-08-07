@@ -122,6 +122,18 @@ export async function fetchGraph(): Promise<Graph> {
   return res.json();
 }
 
+export type PdfSection = { heading: string; body: string };
+export type FullReport = { title: string; subtitle: string; sections: PdfSection[] };
+
+export async function fetchFullReport(): Promise<FullReport> {
+  const res = await fetch(`${API_BASE}/reports/full`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to generate report");
+  }
+  return res.json();
+}
+
 export type ReviewSection = { id: string; name: string; content: string; order: number };
 export type Review = { id: string; title: string; created_at: string; sections: ReviewSection[] };
 

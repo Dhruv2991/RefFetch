@@ -1,44 +1,70 @@
-export function downloadTextFile(filename: string, content: string) {
-  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
+export type PdfSection = { heading: string; body: string };
+
+async function downloadPdf(title: string, subtitle: string, sections: PdfSection[]) {
+  const res = await fetch(`${API_BASE}/export/pdf`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, subtitle, sections }),
+  });
+  if (!res.ok) throw new Error("Failed to generate PDF");
+
+  const blob = await res.blob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = filename;
+  a.download = `${title.replace(/[^a-z0-9]+/gi, "-").slice(0, 60)}.pdf`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-    .slice(0, 60);
-}
-
 export function downloadReviewReport(title: string, sections: { name: string; content: string }[]) {
-  const date = new Date().toLocaleDateString();
-  const body = sections
+  const pdfSections = sections
     .filter((s) => s.content.trim())
-    .map((s) => `## ${s.name}\n\n${s.content.trim()}`)
-    .join("\n\n---\n\n");
-
-  const doc = `# ${title}\n\n*Generated with Research Copilot — ${date}*\n\n---\n\n${body}\n`;
-  downloadTextFile(`${slugify(title)}.md`, doc);
+    .map((s) => ({ heading: s.name, body: s.content }));
+  return downloadPdf(title, "Literature Review — Research Copilot", pdfSections);
 }
 
 export function downloadComparisonReport(paperTitles: string[], comparison: string) {
-  const date = new Date().toLocaleDateString();
-  const doc = `# Paper Comparison\n\n*Generated with Research Copilot — ${date}*\n\n**Papers compared:**\n${paperTitles
-    .map((t) => `- ${t}`)
-    .join("\n")}\n\n---\n\n${comparison}\n`;
-  downloadTextFile(`comparison-${slugify(paperTitles[0] || "papers")}.md`, doc);
+  return downloadPdf(
+    "Paper Comparison",
+    `Comparing: ${paperTitles.join(", ")}`,
+    [{ heading: "", body: comparison }]
+  );
 }
 
 export function downloadMemoryReport(question: string, answer: string, papersReferenced: string[]) {
-  const date = new Date().toLocaleDateString();
-  const doc = `# Research Memory: ${question}\n\n*Generated with Research Copilot — ${date}*\n\n${answer}\n\n---\n\n**Drawn from:** ${papersReferenced.join(", ")}\n`;
-  downloadTextFile(`memory-${slugify(question)}.md`, doc);
+  return downloadPdf(
+    "Research Memory",
+    question,
+    [
+      { heading: "", body: answer },
+      { heading: "Drawn From", body: papersReferenced.map((p) => `- ${p}`).join("\n") },
+    ]
+  );
+}
+
+export function downloadPaperReport(
+  title: string,
+  authors: string | null,
+  year: string | null,
+  summary: string | null,
+  notes: string | null,
+  highlights: string[]
+) {
+  const sections: PdfSection[] = [];
+  if (summary) sections.push({ heading: "Summary", body: summary });
+  if (notes) sections.push({ heading: "Your Notes", body: notes });
+  if (highlights.length > 0) {
+    sections.push({ heading: "Highlights", body: highlights.map((h) => `- ${h}`).join("\n") });
+  }
+  const subtitle = authors || year ? `${authors || "Unknown author"} (${year || "n.d."})` : "";
+  return downloadPdf(title, subtitle, sections);
+}
+
+export function downloadFullReport(title: string, subtitle: string, sections: PdfSection[]) {
+  return downloadPdf(title, subtitle, sections);
 }

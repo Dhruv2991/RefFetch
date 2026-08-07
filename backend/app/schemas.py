@@ -127,3 +127,20 @@ class SectionUpdate(BaseModel):
 class SectionDraftRequest(BaseModel):
     paper_ids: list[uuid.UUID]
     instructions: str | None = None
+
+
+class PdfSection(BaseModel):
+    heading: str
+    body: str
+
+
+class PdfExportRequest(BaseModel):
+    title: str
+    subtitle: str = ""
+    sections: list[PdfSection]
+
+
+class FullReportResponse(BaseModel):
+    title: str
+    subtitle: str
+    sections: list[PdfSection]

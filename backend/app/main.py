@@ -1,16 +1,18 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import init_db
-from app.routers import papers, chat, compare, memory, graph, reviews
+from app.routers import papers, chat, compare, memory, graph, reviews, export, reports
 
 app = FastAPI(title="Research Copilot API")
 
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    # "*" is fine for local dev — browser extensions have unpredictable
-    # chrome-extension:// origins. Lock this down before any real deployment.
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,6 +24,8 @@ app.include_router(compare.router)
 app.include_router(memory.router)
 app.include_router(graph.router)
 app.include_router(reviews.router)
+app.include_router(export.router)
+app.include_router(reports.router)
 
 
 @app.on_event("startup")
