@@ -62,8 +62,9 @@ def _ollama_chat(messages: list[dict], system: str | None = None) -> str:
     payload_messages.extend(messages)
 
     headers = {
-        "User-Agent": "Mozilla/5.0",
-        "ngrok-skip-browser-warning": "true"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "ngrok-skip-browser-warning": "69420",
+        "Accept": "application/json"
     }
 
     try:
