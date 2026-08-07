@@ -62,7 +62,8 @@ def _ollama_chat(messages: list[dict], system: str | None = None) -> str:
     payload_messages.extend(messages)
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        "User-Agent": "Mozilla/5.0",
+        "ngrok-skip-browser-warning": "true"
     }
 
     try:
@@ -77,8 +78,7 @@ def _ollama_chat(messages: list[dict], system: str | None = None) -> str:
         raise HTTPException(
             502,
             "Could not reach your Ollama tunnel. Make sure your laptop is on, Ollama is "
-            "running, and the tunnel is still active — tunnel URLs often expire or change "
-            "when restarted, in which case update OLLAMA_URL in Render's environment vars.",
+            "running, and the ngrok tunnel is still active.",
         )
 
     return response.json()["message"]["content"]
