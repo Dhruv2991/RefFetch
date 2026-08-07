@@ -61,10 +61,15 @@ def _ollama_chat(messages: list[dict], system: str | None = None) -> str:
         payload_messages.append({"role": "system", "content": system})
     payload_messages.extend(messages)
 
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    }
+
     try:
         response = httpx.post(
             f"{OLLAMA_URL}/api/chat",
             json={"model": OLLAMA_MODEL, "messages": payload_messages, "stream": False},
+            headers=headers,
             timeout=120.0,
         )
         response.raise_for_status()
