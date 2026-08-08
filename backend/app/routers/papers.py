@@ -34,41 +34,6 @@ def upload_paper(file: UploadFile = File(...), db: Session = Depends(get_db)):
         raise HTTPException(422, "Could not extract text from this PDF (it may be scanned/image-only)")
 
     title = guess_title(full_text, fallback=file.filename)
-    
-    # ------------------------------------------------------------------
-    # FIX: Limit text sent to Ollama for initial summary to prevent OOM/500 errors.
-    # The first 4000 chars capture the Abstract & Intro perfectly.
-    # ------------------------------------------------------------------
-    summary_text = full_text[:4000]
-    summary = summarize_paper(summary_text)
-
-    paper = Paper(title=title, filename=file.filename, summary=summary, full_text=full_text)
-    db.add(paper)
-    db.flush()  # get paper.id before commit
-
-    # Chunk + embed for retrieval (full_text is still fully indexed for RAG!)
-    chunks = chunk_text(full_text)
-    if chunks:
-        vectors = embed_batch(chunks)
-        for content, vector in zip(chunks, vectors):
-            db.add(Chunk(paper_id=paper.id, content=content, embedding=vector))
-
-    db.commit()
-    db.refresh(paper)
-    return paper
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(400, "Only PDF files are supported right now")
-
-    file_id = str(uuid.uuid4())
-    save_path = os.path.join(UPLOAD_DIR, f"{file_id}.pdf")
-    with open(save_path, "wb") as f:
-        shutil.copyfileobj(file.file, f)
-
-    full_text = extract_text_from_pdf(save_path)
-    if not full_text.strip():
-        raise HTTPException(422, "Could not extract text from this PDF (it may be scanned/image-only)")
-
-    title = guess_title(full_text, fallback=file.filename)
     summary = summarize_paper(full_text)
 
     paper = Paper(title=title, filename=file.filename, summary=summary, full_text=full_text)

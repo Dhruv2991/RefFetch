@@ -7,21 +7,14 @@ from fastapi import HTTPException
 
 load_dotenv()
 
-AI_PROVIDER = os.getenv("AI_PROVIDER", "groq").lower()  # "groq" or "ollama"
-
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
-
-# OLLAMA_URL should be your tunnel's base URL, e.g. https://xxxx.trycloudflare.com
-# or https://xxxx.ngrok-free.app — no trailing slash.
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
+MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
 
 MAX_RETRIES = 3
 
 
-def _groq_chat(messages: list[dict], system: str | None = None) -> str:
+def _chat(messages: list[dict], system: str | None = None) -> str:
     payload_messages = []
     if system:
         payload_messages.append({"role": "system", "content": system})
@@ -31,13 +24,11 @@ def _groq_chat(messages: list[dict], system: str | None = None) -> str:
         response = httpx.post(
             GROQ_URL,
             headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
-            json={"model": GROQ_MODEL, "messages": payload_messages, "max_tokens": 1000},
+            json={"model": MODEL, "messages": payload_messages, "max_tokens": 1000},
             timeout=60.0,
         )
 
         if response.status_code == 429:
-            # Rate limited — Groq tells us how long to wait via this header,
-            # fall back to exponential backoff if it's missing.
             retry_after = float(response.headers.get("retry-after", 2 ** attempt))
             if attempt < MAX_RETRIES - 1:
                 time.sleep(min(retry_after, 10))
@@ -45,52 +36,13 @@ def _groq_chat(messages: list[dict], system: str | None = None) -> str:
             raise HTTPException(
                 429,
                 "Groq's free-tier rate limit was hit and retries were exhausted. "
-                "Wait a minute and try again, or space out requests (e.g. avoid running "
-                "Full Report right after uploading several papers).",
+                "Wait a minute and try again, or space out requests.",
             )
 
         response.raise_for_status()
         return response.json()["choices"][0]["message"]["content"]
 
     raise HTTPException(500, "Groq request failed unexpectedly")
-
-
-def _ollama_chat(messages: list[dict], system: str | None = None) -> str:
-    payload_messages = []
-    if system:
-        payload_messages.append({"role": "system", "content": system})
-    payload_messages.extend(messages)
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        "ngrok-skip-browser-warning": "69420",
-        "Accept": "application/json"
-    }
-
-    try:
-        response = httpx.post(
-            f"{OLLAMA_URL}/api/chat",
-            json={"model": OLLAMA_MODEL, "messages": payload_messages, "stream": False},
-            headers=headers,
-            timeout=120.0,
-        )
-        response.raise_for_status()
-    except httpx.RequestError:
-        raise HTTPException(
-            502,
-            "Could not reach your Ollama tunnel. Make sure your laptop is on, Ollama is "
-            "running, and the ngrok tunnel is still active.",
-        )
-
-    return response.json()["message"]["content"]
-
-
-def _chat(messages: list[dict], system: str | None = None) -> str:
-    """Single entry point used by every AI feature — routes to whichever
-    provider AI_PROVIDER is set to, so switching is just one env var."""
-    if AI_PROVIDER == "ollama":
-        return _ollama_chat(messages, system)
-    return _groq_chat(messages, system)
 
 
 def summarize_paper(full_text: str) -> str:
@@ -107,6 +59,26 @@ Paper text (may be truncated):
 {full_text[:8000]}
 """
     return _chat([{"role": "user", "content": prompt}])
+
+
+def answer_with_context(question: str, context_chunks: list[str], chat_history: list[dict]) -> str:
+    """RAG-style answer: grounds the response in retrieved chunks from the
+    user's paper library, and cites which snippet each claim came from."""
+    context_block = "\n\n---\n\n".join(
+        f"[Source {i+1}]\n{chunk}" for i, chunk in enumerate(context_chunks)
+    )
+
+    system = f"""You are a research assistant answering questions using ONLY the
+provided source excerpts from the user's paper library. Cite sources inline
+like [Source 1]. If the excerpts don't contain the answer, say so clearly
+instead of guessing.
+
+Sources:
+{context_block}
+"""
+
+    messages = chat_history + [{"role": "user", "content": question}]
+    return _chat(messages, system=system)
 
 
 def synthesize_memory(question: str, paper_summaries: list[dict], context_chunks: list[dict]) -> str:
@@ -166,23 +138,3 @@ Source papers:
 {papers_block}
 """
     return _chat([{"role": "user", "content": prompt}])
-
-
-def answer_with_context(question: str, context_chunks: list[str], chat_history: list[dict]) -> str:
-    """RAG-style answer: grounds the response in retrieved chunks from the
-    user's paper library, and cites which snippet each claim came from."""
-    context_block = "\n\n---\n\n".join(
-        f"[Source {i+1}]\n{chunk}" for i, chunk in enumerate(context_chunks)
-    )
-
-    system = f"""You are a research assistant answering questions using ONLY the
-provided source excerpts from the user's paper library. Cite sources inline
-like [Source 1]. If the excerpts don't contain the answer, say so clearly
-instead of guessing.
-
-Sources:
-{context_block}
-"""
-
-    messages = chat_history + [{"role": "user", "content": question}]
-    return _chat(messages, system=system)
