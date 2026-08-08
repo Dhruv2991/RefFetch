@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_db
 from app.routers import papers, chat, compare, memory, graph, reviews, export, reports
 
-app = FastAPI(title="Research Copilot API")
+app = FastAPI(title="RefFetch API")
 
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 

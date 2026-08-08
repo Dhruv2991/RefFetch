@@ -139,9 +139,12 @@ export default function Home() {
         {/* Library column */}
         <section className="space-y-4">
           <div className="flex items-baseline justify-between">
-            <h1 className="font-serif text-2xl font-semibold text-paper">
-              <span className="highlight-mark">Research Copilot</span>
-            </h1>
+            <div>
+              <h1 className="font-serif text-2xl font-semibold text-paper leading-tight">
+                <span className="highlight-mark">RefFetch</span>
+              </h1>
+              <p className="text-[11px] text-paper-faint mt-0.5 font-mono">your research, remembered</p>
+            </div>
           </div>
 
           <button

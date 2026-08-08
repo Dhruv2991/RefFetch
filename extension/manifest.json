@@ -1,15 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "Research Copilot",
+  "name": "RefFetch",
   "version": "1.0.0",
-  "description": "Save papers from arXiv (and other sites) straight into your Research Copilot library.",
+  "description": "Save papers from arXiv straight into your RefFetch research library — one click to summarize, tag, and cross-reference.",
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Research Copilot"
+    "default_title": "RefFetch"
   },
   "permissions": ["activeTab", "scripting"],
   "host_permissions": [
-    "http://localhost:8000/*",
+    "https://reffetch.onrender.com/*",
     "https://arxiv.org/*"
   ]
 }

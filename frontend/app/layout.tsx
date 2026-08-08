@@ -1,6 +1,4 @@
-import type { Metadata } from "next";
-// @ts-ignore: side-effect import of global CSS (handled by Next.js)
-import "./globals.css" with { type: "css" };
+import "./globals.css";
 import { Source_Serif_4, Inter, JetBrains_Mono } from "next/font/google";
 
 const serif = Source_Serif_4({
@@ -22,8 +20,11 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "Research Copilot",
-  description: "Your AI research workspace",
+  title: "RefFetch — Your AI Research Workspace",
+  description: "Upload papers, chat with your library, compare findings, and build literature reviews — all grounded in what you've actually read.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

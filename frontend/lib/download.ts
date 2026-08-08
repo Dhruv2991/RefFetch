@@ -25,7 +25,7 @@ export function downloadReviewReport(title: string, sections: { name: string; co
   const pdfSections = sections
     .filter((s) => s.content.trim())
     .map((s) => ({ heading: s.name, body: s.content }));
-  return downloadPdf(title, "Literature Review — Research Copilot", pdfSections);
+  return downloadPdf(title, "Literature Review — RefFetch", pdfSections);
 }
 
 export function downloadComparisonReport(paperTitles: string[], comparison: string) {

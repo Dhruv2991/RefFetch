@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:8000";
+const API_BASE = "https://reffetch.onrender.com";
 
 const statusEl = document.getElementById("status");
 const saveBtn = document.getElementById("saveBtn");

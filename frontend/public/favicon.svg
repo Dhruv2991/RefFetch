@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#11151C"/>
+  <path d="M8 8 L8 24 L18 24 Q23 24 23 19 Q23 16 20 15 Q23 14 23 11 Q23 8 18 8 Z M12 11 L17 11 Q19 11 19 13 Q19 15 17 15 L12 15 Z M12 18 L18 18 Q20 18 20 20 Q20 21 18 21 L12 21 Z" fill="none"/>
+  <text x="9" y="23" font-family="Georgia, serif" font-size="20" font-weight="700" fill="#D9A441">R</text>
+  <rect x="8" y="24.5" width="15" height="2.4" rx="1" fill="#D9A441" opacity="0.35" transform="rotate(-1 15 25)"/>
+</svg>
