@@ -1,38 +1,36 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-
-from app.database import get_db
-from app.models import Paper, Chunk
-from app.schemas import CompareRequest, CompareResponse
-from app.services.compare import compare_papers
-
-router = APIRouter(prefix="/compare", tags=["compare"])
+from app.services.ai import _chat
 
 
-@router.post("/", response_model=CompareResponse)
-def compare(req: CompareRequest, db: Session = Depends(get_db)):
-    if len(req.paper_ids) < 2:
-        raise HTTPException(400, "Select at least 2 papers to compare")
-    if len(req.paper_ids) > 5:
-        raise HTTPException(400, "Comparing more than 5 papers at once gets unreliable — pick fewer")
-
-    papers_data = []
-    for pid in req.paper_ids:
-        paper = db.query(Paper).filter(Paper.id == pid).first()
-        if not paper:
-            raise HTTPException(404, f"Paper {pid} not found")
-
-        # Grab a handful of chunks as representative excerpts, so the
-        # comparison is grounded in more than just the auto-summary.
-        chunks = db.query(Chunk).filter(Chunk.paper_id == pid).limit(3).all()
-
-        papers_data.append(
-            {
-                "title": paper.title,
-                "summary": paper.summary or "(no summary available)",
-                "excerpts": [c.content for c in chunks],
-            }
+def compare_papers(papers: list[dict]) -> str:
+    """
+    papers: list of {title, summary, excerpts: list[str]}
+    Grounds the comparison in each paper's summary + a few representative
+    chunks, rather than dumping full text (keeps prompt size sane and
+    keeps the model focused on citable material).
+    """
+    paper_blocks = []
+    for i, p in enumerate(papers):
+        excerpts = "\n".join(f"  - {e[:300]}" for e in p["excerpts"][:3])
+        paper_blocks.append(
+            f"[Paper {i+1}] {p['title']}\n"
+            f"Summary: {p['summary']}\n"
+            f"Representative excerpts:\n{excerpts}"
         )
 
-    comparison = compare_papers(papers_data)
-    return CompareResponse(comparison=comparison)
+    papers_block = "\n\n".join(paper_blocks)
+
+    prompt = f"""You are comparing {len(papers)} research papers for a researcher.
+Using ONLY the information below, produce a structured comparison with these
+sections:
+
+**Methods** — how each paper's approach differs (reference papers as [Paper 1], [Paper 2], etc.)
+**Key findings** — main results of each
+**Agreements** — where the papers align or reinforce each other
+**Contradictions or tensions** — where papers disagree, use different assumptions, or reach different conclusions. If you find none, say so explicitly rather than inventing one.
+**Gaps** — what none of these papers address
+
+Papers:
+
+{papers_block}
+"""
+    return _chat([{"role": "user", "content": prompt}])
