@@ -7,7 +7,7 @@
     "default_popup": "popup.html",
     "default_title": "RefFetch"
   },
-  "permissions": ["activeTab", "scripting"],
+  "permissions": ["activeTab"],
   "host_permissions": [
     "https://reffetch.onrender.com/*",
     "https://arxiv.org/*"
