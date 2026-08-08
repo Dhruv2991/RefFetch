@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.auth import get_current_user_id
 from app.models import Paper, Chunk
 from app.schemas import FullReportResponse, PdfSection
 from app.services.ai import synthesize_memory
@@ -11,8 +12,8 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 @router.get("/full", response_model=FullReportResponse)
-def full_report(db: Session = Depends(get_db)):
-    papers = db.query(Paper).all()
+def full_report(db: Session = Depends(get_db), user_id: str = Depends(get_current_user_id)):
+    papers = db.query(Paper).filter(Paper.user_id == user_id).all()
     if not papers:
         raise HTTPException(400, "Your library is empty — upload some papers first")
 
@@ -44,7 +45,8 @@ def full_report(db: Session = Depends(get_db)):
     # cover, and where are the gaps" pass, using the same machinery as the
     # Memory feature but with a fixed, comprehensive prompt.
     paper_summaries = [{"title": p.title, "summary": p.summary or ""} for p in papers]
-    all_chunks = db.query(Chunk).limit(15).all()
+    paper_ids = [p.id for p in papers]
+    all_chunks = db.query(Chunk).filter(Chunk.paper_id.in_(paper_ids)).limit(15).all()
     paper_titles_by_id = {p.id: p.title for p in papers}
     context_chunks = [
         {"title": paper_titles_by_id.get(c.paper_id, "Unknown"), "content": c.content} for c in all_chunks

@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.auth import get_current_user_id
 from app.models import Paper, Chunk
 from app.schemas import GraphResponse, GraphNode, GraphEdge
 from app.services.graph import compute_paper_vector, build_edges
@@ -10,8 +11,8 @@ router = APIRouter(prefix="/graph", tags=["graph"])
 
 
 @router.get("/", response_model=GraphResponse)
-def get_graph(db: Session = Depends(get_db)):
-    papers = db.query(Paper).all()
+def get_graph(db: Session = Depends(get_db), user_id: str = Depends(get_current_user_id)):
+    papers = db.query(Paper).filter(Paper.user_id == user_id).all()
 
     paper_vectors = {}
     for p in papers:

@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.auth import get_current_user_id
 from app.models import Paper, Chunk, Highlight
 from app.schemas import PaperOut, PaperUpdate, HighlightIn, HighlightOut
 from app.services.pdf import extract_text_from_pdf, guess_title
@@ -19,8 +20,22 @@ UPLOAD_DIR = "uploaded_pdfs"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
+def _get_owned_paper(db: Session, paper_id: uuid.UUID, user_id: str) -> Paper:
+    """Fetches a paper only if it belongs to the current user — a 404
+    (not 403) is returned either way so we don't leak whether a paper id
+    exists at all for someone else's account."""
+    paper = db.query(Paper).filter(Paper.id == paper_id, Paper.user_id == user_id).first()
+    if not paper:
+        raise HTTPException(404, "Paper not found")
+    return paper
+
+
 @router.post("/upload", response_model=PaperOut)
-def upload_paper(file: UploadFile = File(...), db: Session = Depends(get_db)):
+def upload_paper(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(400, "Only PDF files are supported right now")
 
@@ -36,11 +51,10 @@ def upload_paper(file: UploadFile = File(...), db: Session = Depends(get_db)):
     title = guess_title(full_text, fallback=file.filename)
     summary = summarize_paper(full_text)
 
-    paper = Paper(title=title, filename=file.filename, summary=summary, full_text=full_text)
+    paper = Paper(user_id=user_id, title=title, filename=file.filename, summary=summary, full_text=full_text)
     db.add(paper)
     db.flush()  # get paper.id before commit
 
-    # Chunk + embed for retrieval
     chunks = chunk_text(full_text)
     if chunks:
         vectors = embed_batch(chunks)
@@ -53,23 +67,23 @@ def upload_paper(file: UploadFile = File(...), db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=list[PaperOut])
-def list_papers(db: Session = Depends(get_db)):
-    return db.query(Paper).order_by(Paper.created_at.desc()).all()
+def list_papers(db: Session = Depends(get_db), user_id: str = Depends(get_current_user_id)):
+    return db.query(Paper).filter(Paper.user_id == user_id).order_by(Paper.created_at.desc()).all()
 
 
 @router.get("/{paper_id}", response_model=PaperOut)
-def get_paper(paper_id: uuid.UUID, db: Session = Depends(get_db)):
-    paper = db.query(Paper).filter(Paper.id == paper_id).first()
-    if not paper:
-        raise HTTPException(404, "Paper not found")
-    return paper
+def get_paper(paper_id: uuid.UUID, db: Session = Depends(get_db), user_id: str = Depends(get_current_user_id)):
+    return _get_owned_paper(db, paper_id, user_id)
 
 
 @router.patch("/{paper_id}", response_model=PaperOut)
-def update_paper(paper_id: uuid.UUID, update: PaperUpdate, db: Session = Depends(get_db)):
-    paper = db.query(Paper).filter(Paper.id == paper_id).first()
-    if not paper:
-        raise HTTPException(404, "Paper not found")
+def update_paper(
+    paper_id: uuid.UUID,
+    update: PaperUpdate,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
+    paper = _get_owned_paper(db, paper_id, user_id)
     for field, value in update.model_dump(exclude_unset=True).items():
         setattr(paper, field, value)
     db.commit()
@@ -78,20 +92,26 @@ def update_paper(paper_id: uuid.UUID, update: PaperUpdate, db: Session = Depends
 
 
 @router.get("/{paper_id}/citation")
-def get_citation(paper_id: uuid.UUID, style: str = "bibtex", db: Session = Depends(get_db)):
-    paper = db.query(Paper).filter(Paper.id == paper_id).first()
-    if not paper:
-        raise HTTPException(404, "Paper not found")
+def get_citation(
+    paper_id: uuid.UUID,
+    style: str = "bibtex",
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
+    paper = _get_owned_paper(db, paper_id, user_id)
     if style == "apa":
         return {"citation": to_apa(paper.title, paper.authors, paper.year)}
     return {"citation": to_bibtex(paper.title, paper.authors, paper.year)}
 
 
 @router.post("/{paper_id}/highlights", response_model=HighlightOut)
-def add_highlight(paper_id: uuid.UUID, highlight: HighlightIn, db: Session = Depends(get_db)):
-    paper = db.query(Paper).filter(Paper.id == paper_id).first()
-    if not paper:
-        raise HTTPException(404, "Paper not found")
+def add_highlight(
+    paper_id: uuid.UUID,
+    highlight: HighlightIn,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
+    _get_owned_paper(db, paper_id, user_id)  # ownership check
     h = Highlight(paper_id=paper_id, excerpt=highlight.excerpt, comment=highlight.comment)
     db.add(h)
     db.commit()
@@ -100,12 +120,21 @@ def add_highlight(paper_id: uuid.UUID, highlight: HighlightIn, db: Session = Dep
 
 
 @router.get("/{paper_id}/highlights", response_model=list[HighlightOut])
-def list_highlights(paper_id: uuid.UUID, db: Session = Depends(get_db)):
+def list_highlights(
+    paper_id: uuid.UUID, db: Session = Depends(get_db), user_id: str = Depends(get_current_user_id)
+):
+    _get_owned_paper(db, paper_id, user_id)  # ownership check
     return db.query(Highlight).filter(Highlight.paper_id == paper_id).order_by(Highlight.created_at.desc()).all()
 
 
 @router.delete("/{paper_id}/highlights/{highlight_id}")
-def delete_highlight(paper_id: uuid.UUID, highlight_id: uuid.UUID, db: Session = Depends(get_db)):
+def delete_highlight(
+    paper_id: uuid.UUID,
+    highlight_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user_id),
+):
+    _get_owned_paper(db, paper_id, user_id)  # ownership check
     h = db.query(Highlight).filter(Highlight.id == highlight_id, Highlight.paper_id == paper_id).first()
     if not h:
         raise HTTPException(404, "Highlight not found")
@@ -115,10 +144,8 @@ def delete_highlight(paper_id: uuid.UUID, highlight_id: uuid.UUID, db: Session =
 
 
 @router.delete("/{paper_id}")
-def delete_paper(paper_id: uuid.UUID, db: Session = Depends(get_db)):
-    paper = db.query(Paper).filter(Paper.id == paper_id).first()
-    if not paper:
-        raise HTTPException(404, "Paper not found")
+def delete_paper(paper_id: uuid.UUID, db: Session = Depends(get_db), user_id: str = Depends(get_current_user_id)):
+    paper = _get_owned_paper(db, paper_id, user_id)
     db.delete(paper)
     db.commit()
     return {"ok": True}

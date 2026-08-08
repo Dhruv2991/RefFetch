@@ -8,6 +8,8 @@ import LitReviewBuilder from "./LitReviewBuilder";
 import Markdown from "./Markdown";
 import { downloadComparisonReport, downloadMemoryReport, downloadFullReport, PdfSection } from "@/lib/download";
 import { fetchFullReport } from "@/lib/api";
+import AuthGate from "./AuthGate";
+import { supabase } from "@/lib/supabaseClient";
 
 const NAV_ITEMS: { key: "review" | "graph" | "memory"; label: string; activeClass: string }[] = [
   { key: "review", label: "Lit Review", activeClass: "bg-gold/20 text-gold-bright" },
@@ -15,7 +17,7 @@ const NAV_ITEMS: { key: "review" | "graph" | "memory"; label: string; activeClas
   { key: "memory", label: "Memory", activeClass: "bg-teal/20 text-teal" },
 ];
 
-export default function Home() {
+function AppShell({ session }: { session: any }) {
   const [papers, setPapers] = useState<Paper[]>([]);
   const [uploading, setUploading] = useState(false);
   const [activePaperId, setActivePaperId] = useState<string | undefined>();
@@ -145,6 +147,16 @@ export default function Home() {
               </h1>
               <p className="text-[11px] text-paper-faint mt-0.5 font-mono">your research, remembered</p>
             </div>
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-paper-faint">
+            <span className="truncate">{session?.user?.email}</span>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="shrink-0 text-paper-faint hover:text-rose transition-colors ml-2"
+            >
+              Sign out
+            </button>
           </div>
 
           <button
@@ -481,4 +493,8 @@ export default function Home() {
       </div>
     </main>
   );
+}
+
+export default function Home() {
+  return <AuthGate>{(session) => <AppShell session={session} />}</AuthGate>;
 }

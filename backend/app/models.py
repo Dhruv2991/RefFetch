@@ -13,6 +13,7 @@ class Paper(Base):
     __tablename__ = "papers"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String, nullable=False, index=True)
     title = Column(String, nullable=False)
     filename = Column(String, nullable=False)
     summary = Column(Text, nullable=True)
@@ -49,6 +50,7 @@ class Review(Base):
     __tablename__ = "reviews"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(String, nullable=False, index=True)
     title = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
