@@ -7,7 +7,7 @@
     "default_popup": "popup.html",
     "default_title": "RefFetch"
   },
-  "permissions": ["activeTab", "scripting", "identity", "storage"],
+  "permissions": ["activeTab", "identity", "storage"],
   "host_permissions": [
     "https://reffetch.onrender.com/*",
     "https://drfbsatxkyvrvxcmwpau.supabase.co/*",
