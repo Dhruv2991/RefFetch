@@ -78,20 +78,20 @@ export default function LitReviewBuilder({ papers }: { papers: Paper[] }) {
       <div className="w-56 border-r border-hairline p-3 space-y-2 overflow-y-auto">
         <div className="flex gap-1">
           <input
-            className="flex-1 bg-ink-card rounded px-2 py-1 text-xs"
+            className="flex-1 bg-ink-card rounded-md px-2 py-1 text-xs"
             placeholder="New review title..."
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCreate()}
           />
-          <button onClick={handleCreate} className="bg-ink-hover hover:bg-gray-600 px-2 rounded text-xs">
+          <button onClick={handleCreate} className="bg-ink-hover hover:bg-gray-600 px-2 rounded-md text-xs">
             +
           </button>
         </div>
         {reviews.map((r) => (
           <div key={r.id} className="flex items-center gap-1">
             <button
-              className={`flex-1 text-left px-2 py-1.5 rounded text-xs ${
+              className={`flex-1 text-left px-2 py-1.5 rounded-md text-xs ${
                 activeReviewId === r.id ? "bg-gold/20" : "bg-ink-card hover:bg-ink-hover"
               }`}
               onClick={() => {
@@ -122,7 +122,7 @@ export default function LitReviewBuilder({ papers }: { papers: Paper[] }) {
             {activeReview.sections.map((s) => (
               <button
                 key={s.id}
-                className={`w-full text-left px-2 py-1.5 rounded text-xs ${
+                className={`w-full text-left px-2 py-1.5 rounded-md text-xs ${
                   activeSectionId === s.id ? "bg-gold/20" : "bg-ink-card hover:bg-ink-hover"
                 }`}
                 onClick={() => setActiveSectionId(s.id)}
@@ -156,7 +156,7 @@ export default function LitReviewBuilder({ papers }: { papers: Paper[] }) {
                   <button
                     onClick={handleDraft}
                     disabled={drafting || selectedPapers.length === 0}
-                    className="bg-gold hover:bg-gold-bright disabled:bg-ink-card disabled:text-paper-faint px-3 py-1.5 rounded text-xs"
+                    className="bg-gold hover:bg-gold-bright disabled:bg-ink-card disabled:text-paper-faint px-3 py-1.5 rounded-md text-xs"
                   >
                     {drafting ? "Drafting..." : "Draft with AI"}
                   </button>
@@ -164,7 +164,7 @@ export default function LitReviewBuilder({ papers }: { papers: Paper[] }) {
                 </div>
 
                 <textarea
-                  className="flex-1 bg-ink-card rounded p-3 text-sm resize-none outline-none"
+                  className="flex-1 bg-ink-card rounded-lg p-3 text-sm resize-none outline-none"
                   value={activeSection.content}
                   onChange={(e) => {
                     const content = e.target.value;

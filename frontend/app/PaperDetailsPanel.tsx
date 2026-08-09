@@ -112,7 +112,7 @@ export default function PaperDetailsPanel({
         <div>
           <label className="text-xs text-paper-faint">Authors</label>
           <input
-            className="w-full bg-ink-card rounded px-2 py-1 text-xs"
+            className="w-full bg-ink-card rounded-md px-2 py-1 text-xs"
             value={authors}
             onChange={(e) => setAuthors(e.target.value)}
             onBlur={() => saveField({ authors })}
@@ -122,7 +122,7 @@ export default function PaperDetailsPanel({
         <div>
           <label className="text-xs text-paper-faint">Year</label>
           <input
-            className="w-full bg-ink-card rounded px-2 py-1 text-xs"
+            className="w-full bg-ink-card rounded-md px-2 py-1 text-xs"
             value={year}
             onChange={(e) => setYear(e.target.value)}
             onBlur={() => saveField({ year })}
@@ -146,13 +146,13 @@ export default function PaperDetailsPanel({
         </div>
         <div className="flex gap-1">
           <input
-            className="flex-1 bg-ink-card rounded px-2 py-1 text-xs"
+            className="flex-1 bg-ink-card rounded-md px-2 py-1 text-xs"
             placeholder="Add a tag..."
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addTag()}
           />
-          <button onClick={addTag} className="bg-ink-hover hover:bg-gray-600 px-2 rounded text-xs">
+          <button onClick={addTag} className="bg-ink-hover hover:bg-gray-600 px-2 rounded-md text-xs">
             Add
           </button>
         </div>
@@ -162,7 +162,7 @@ export default function PaperDetailsPanel({
       <div>
         <label className="text-xs text-paper-faint block mb-1">Your notes</label>
         <textarea
-          className="w-full bg-ink-card rounded px-2 py-1 text-xs min-h-[80px]"
+          className="w-full bg-ink-card rounded-md px-2 py-1 text-xs min-h-[80px]"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           onBlur={() => saveField({ notes })}
@@ -176,20 +176,20 @@ export default function PaperDetailsPanel({
         <label className="text-xs text-paper-faint block mb-1">Citation</label>
         <div className="flex gap-1 mb-2">
           <button
-            className={`px-2 py-1 rounded text-xs ${citationStyle === "bibtex" && citation ? "bg-gold/25" : "bg-ink-card hover:bg-ink-hover"}`}
+            className={`px-2 py-1 rounded-md text-xs ${citationStyle === "bibtex" && citation ? "bg-gold/25" : "bg-ink-card hover:bg-ink-hover"}`}
             onClick={() => loadCitation("bibtex")}
           >
             BibTeX
           </button>
           <button
-            className={`px-2 py-1 rounded text-xs ${citationStyle === "apa" && citation ? "bg-gold/25" : "bg-ink-card hover:bg-ink-hover"}`}
+            className={`px-2 py-1 rounded-md text-xs ${citationStyle === "apa" && citation ? "bg-gold/25" : "bg-ink-card hover:bg-ink-hover"}`}
             onClick={() => loadCitation("apa")}
           >
             APA
           </button>
         </div>
         {citation && (
-          <pre className="bg-ink rounded p-2 text-xs whitespace-pre-wrap select-all">{citation}</pre>
+          <pre className="bg-ink rounded-lg p-2 text-xs whitespace-pre-wrap select-all">{citation}</pre>
         )}
       </div>
 
@@ -198,18 +198,18 @@ export default function PaperDetailsPanel({
         <label className="text-xs text-paper-faint block mb-1">Highlights</label>
         <div className="flex gap-1 mb-2">
           <textarea
-            className="flex-1 bg-ink-card rounded px-2 py-1 text-xs min-h-[50px]"
+            className="flex-1 bg-ink-card rounded-md px-2 py-1 text-xs min-h-[50px]"
             placeholder="Paste a key excerpt to save..."
             value={newExcerpt}
             onChange={(e) => setNewExcerpt(e.target.value)}
           />
         </div>
-        <button onClick={handleAddHighlight} className="bg-ink-hover hover:bg-gray-600 px-2 py-1 rounded text-xs mb-2">
+        <button onClick={handleAddHighlight} className="bg-ink-hover hover:bg-gray-600 px-2 py-1 rounded-md text-xs mb-2">
           Save highlight
         </button>
         <div className="space-y-2">
           {highlights.map((h) => (
-            <div key={h.id} className="bg-ink-card rounded p-2 text-xs relative">
+            <div key={h.id} className="bg-ink-card rounded-lg p-2 text-xs relative">
               <p className="whitespace-pre-wrap pr-4">{h.excerpt}</p>
               <button
                 onClick={() => handleDeleteHighlight(h.id)}

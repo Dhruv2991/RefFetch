@@ -3,8 +3,33 @@
 @tailwind utilities;
 
 body {
-  background-color: #11151C;
+  background-color: #0B0E13;
   color: #EDEAE1;
+}
+
+/* Visible keyboard focus everywhere, quietly styled to match the theme */
+:focus-visible {
+  outline: 2px solid #D9A441;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Small caps utility label — used for section eyebrows like a card catalog tab */
+.tab-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #5C6270;
+}
+
+/* Reduced motion respected */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 /* Signature element: a hand-drawn highlighter stroke, used behind active
@@ -30,8 +55,13 @@ body {
 
 /* subtle grain so flat dark surfaces don't look sterile */
 .grain-surface {
-  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.025) 1px, transparent 0);
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.02) 1px, transparent 0);
   background-size: 22px 22px;
+}
+
+/* faint top-down vignette used behind the app shell, like light falling on a desk */
+.desk-glow {
+  background: radial-gradient(1100px 480px at 50% -10%, rgba(217, 164, 65, 0.05), transparent 60%);
 }
 
 ::selection {

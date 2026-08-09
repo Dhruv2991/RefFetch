@@ -136,72 +136,92 @@ function AppShell({ session }: { session: any }) {
   };
 
   return (
-    <main className="min-h-screen bg-ink grain-surface">
-      <div className="max-w-7xl mx-auto p-6 grid grid-cols-[300px_1fr] gap-6">
-        {/* Library column */}
-        <section className="space-y-4">
-          <div className="flex items-baseline justify-between">
-            <div>
-              <h1 className="font-serif text-2xl font-semibold text-paper leading-tight">
-                <span className="highlight-mark">RefFetch</span>
-              </h1>
-              <p className="text-[11px] text-paper-faint mt-0.5 font-mono">your research, remembered</p>
-            </div>
+    <main className="min-h-screen bg-ink-deep grain-surface desk-glow">
+      {/* Top header bar */}
+      <header className="border-b border-hairline-soft bg-ink/80 backdrop-blur sticky top-0 z-20">
+        <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-baseline gap-3">
+            <h1 className="font-serif text-xl font-semibold text-paper leading-none">
+              <span className="highlight-mark">RefFetch</span>
+            </h1>
+            <p className="hidden sm:block text-[11px] text-paper-faint font-mono">your research, remembered</p>
           </div>
-
-          <div className="flex items-center justify-between text-xs text-paper-faint">
-            <span className="truncate">{session?.user?.email}</span>
+          <div className="flex items-center gap-4">
+            <span className="hidden md:block text-xs text-paper-faint truncate max-w-[220px]">
+              {session?.user?.email}
+            </span>
             <button
               onClick={() => supabase.auth.signOut()}
-              className="shrink-0 text-paper-faint hover:text-rose transition-colors ml-2"
+              className="text-xs text-paper-faint hover:text-rose transition-colors border border-hairline hover:border-rose/40 rounded-md px-2.5 py-1.5"
             >
               Sign out
             </button>
           </div>
+        </div>
+      </header>
 
+      <div className="max-w-[1400px] mx-auto p-6 grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-6">
+        {/* Library column */}
+        <section className="space-y-5">
           <button
             onClick={runFullReport}
-            className="w-full bg-gradient-to-r from-gold to-gold-bright text-ink font-semibold px-4 py-3 rounded-lg text-sm hover:opacity-90 transition-opacity shadow-lg shadow-gold/10"
+            className="group w-full bg-gradient-to-r from-gold to-gold-bright text-ink font-semibold px-4 py-3 rounded-xl text-sm hover:brightness-105 active:brightness-95 transition shadow-pop"
           >
-            ✦ Generate Full Analysis Report
+            <span className="inline-flex items-center gap-1.5">
+              <span className="text-[15px] leading-none group-hover:rotate-12 transition-transform">✦</span>
+              Generate Full Analysis Report
+            </span>
           </button>
-          <p className="text-[11px] text-paper-faint -mt-2">
+          <p className="text-[11px] text-paper-faint -mt-3.5 px-0.5 leading-relaxed">
             Runs a complete analysis across your whole library — overview, synthesis, and gaps — as one PDF.
           </p>
 
-          <nav className="flex flex-wrap gap-1.5">
-            {NAV_ITEMS.map((item) => (
+          <div>
+            <p className="tab-label mb-2 px-0.5">Views</p>
+            <nav className="flex flex-wrap gap-1.5">
+              {NAV_ITEMS.map((item) => (
+                <button
+                  key={item.key}
+                  className={`text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
+                    view === item.key ? item.activeClass : "bg-ink-card text-paper-muted hover:bg-ink-hover"
+                  }`}
+                  onClick={() => {
+                    setView(item.key);
+                    setCompareMode(false);
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))}
               <button
-                key={item.key}
                 className={`text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
-                  view === item.key ? item.activeClass : "bg-ink-card text-paper-muted hover:bg-ink-hover"
+                  compareMode ? "bg-rose/20 text-rose" : "bg-ink-card text-paper-muted hover:bg-ink-hover"
                 }`}
                 onClick={() => {
-                  setView(item.key);
-                  setCompareMode(false);
+                  setCompareMode(!compareMode);
+                  setSelectedForCompare([]);
                 }}
               >
-                {item.label}
+                Compare
               </button>
-            ))}
-            <button
-              className={`text-xs px-2.5 py-1.5 rounded-md font-medium transition-colors ${
-                compareMode ? "bg-rose/20 text-rose" : "bg-ink-card text-paper-muted hover:bg-ink-hover"
-              }`}
-              onClick={() => {
-                setCompareMode(!compareMode);
-                setSelectedForCompare([]);
-              }}
-            >
-              Compare
-            </button>
-          </nav>
+            </nav>
+          </div>
 
           <div
-            className="border border-dashed border-hairline rounded-lg p-4 text-sm text-paper-faint cursor-pointer hover:border-gold-dim hover:text-paper-muted transition-colors"
+            className="border border-dashed border-hairline rounded-xl p-4 text-sm text-paper-faint cursor-pointer hover:border-gold-dim hover:text-paper-muted hover:bg-gold-wash transition-colors"
             onClick={() => fileInput.current?.click()}
           >
-            {uploading ? "Uploading & summarizing..." : "＋ Upload a PDF"}
+            <span className="inline-flex items-center gap-2">
+              <span className="text-base leading-none">{uploading ? "" : "＋"}</span>
+              {uploading ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-3.5 h-3.5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+                  Uploading &amp; summarizing...
+                </span>
+              ) : (
+                "Upload a PDF"
+              )}
+            </span>
             <input
               ref={fileInput}
               type="file"
@@ -221,84 +241,93 @@ function AppShell({ session }: { session: any }) {
             </button>
           )}
 
-          <div className="space-y-1.5">
-            {!compareMode && (
-              <button
-                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                  !activePaperId && view === "chat" ? "bg-gold/15 text-gold-bright" : "bg-ink-card text-paper-muted hover:bg-ink-hover"
-                }`}
-                onClick={() => {
-                  setActivePaperId(undefined);
-                  setView("chat");
-                }}
-              >
-                Chat across whole library
-              </button>
-            )}
-            {papers.map((p) => (
-              <div key={p.id} className="flex items-center gap-2">
-                {compareMode && (
-                  <input
-                    type="checkbox"
-                    checked={selectedForCompare.includes(p.id)}
-                    onChange={() => toggleCompareSelection(p.id)}
-                    className="shrink-0 accent-rose"
-                  />
-                )}
+          <div>
+            <p className="tab-label mb-2 px-0.5">Library · {papers.length}</p>
+            <div className="space-y-1.5">
+              {!compareMode && (
                 <button
-                  className={`flex-1 text-left px-3 py-2 rounded-md text-sm transition-colors ${
-                    activePaperId === p.id && !compareMode
-                      ? "bg-gold/15 text-gold-bright"
-                      : "bg-ink-card text-paper-muted hover:bg-ink-hover"
+                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                    !activePaperId && view === "chat" ? "bg-gold/15 text-gold-bright" : "bg-ink-card text-paper-muted hover:bg-ink-hover"
                   }`}
                   onClick={() => {
-                    if (compareMode) {
-                      toggleCompareSelection(p.id);
-                    } else {
-                      setActivePaperId(p.id);
-                      setView("chat");
-                    }
+                    setActivePaperId(undefined);
+                    setView("chat");
                   }}
-                  title={p.title}
                 >
-                  <span className="font-serif">{p.title.slice(0, 46)}</span>
-                  {p.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {p.tags.slice(0, 3).map((t) => (
-                        <span key={t} className="font-mono text-[10px] text-teal bg-teal/10 px-1.5 py-0.5 rounded">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  Chat across whole library
                 </button>
-              </div>
-            ))}
-            {papers.length === 0 && (
-              <p className="text-xs text-paper-faint px-1">No papers yet — upload one to get started.</p>
-            )}
+              )}
+              {papers.map((p) => (
+                <div key={p.id} className="flex items-center gap-2">
+                  {compareMode && (
+                    <input
+                      type="checkbox"
+                      checked={selectedForCompare.includes(p.id)}
+                      onChange={() => toggleCompareSelection(p.id)}
+                      className="shrink-0 accent-rose"
+                    />
+                  )}
+                  <button
+                    className={`flex-1 text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                      activePaperId === p.id && !compareMode
+                        ? "bg-gold/15 text-gold-bright"
+                        : "bg-ink-card text-paper-muted hover:bg-ink-hover"
+                    }`}
+                    onClick={() => {
+                      if (compareMode) {
+                        toggleCompareSelection(p.id);
+                      } else {
+                        setActivePaperId(p.id);
+                        setView("chat");
+                      }
+                    }}
+                    title={p.title}
+                  >
+                    <span className="font-serif">{p.title.slice(0, 46)}</span>
+                    {p.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {p.tags.slice(0, 3).map((t) => (
+                          <span key={t} className="font-mono text-[10px] text-teal bg-teal/10 px-1.5 py-0.5 rounded">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </button>
+                </div>
+              ))}
+              {papers.length === 0 && (
+                <div className="text-xs text-paper-faint px-3 py-4 rounded-lg border border-hairline-soft bg-ink-card/40 text-center leading-relaxed">
+                  Nothing here yet.
+                  <br />
+                  Upload a PDF above to start your library.
+                </div>
+              )}
+            </div>
           </div>
         </section>
 
         {/* Right column: chat, details, compare, memory, graph, review */}
-        <section className="flex flex-col h-[88vh] bg-ink-raised rounded-xl border border-hairline overflow-hidden">
+        <section className="flex flex-col h-[calc(100vh-8rem)] lg:h-[calc(100vh-7rem)] bg-ink-raised rounded-2xl border border-hairline shadow-panel overflow-hidden">
           {activePaper && !compareMode && (view === "chat" || view === "details") && (
-            <div className="flex border-b border-hairline shrink-0">
+            <div className="flex items-center gap-1 border-b border-hairline shrink-0 px-2 bg-ink-raised/60">
               <button
-                className={`px-4 py-2.5 text-sm font-medium transition-colors ${
-                  view === "chat" ? "text-gold-bright border-b-2 border-gold" : "text-paper-faint hover:text-paper-muted"
+                className={`px-3.5 py-3 text-sm font-medium transition-colors relative ${
+                  view === "chat" ? "text-gold-bright" : "text-paper-faint hover:text-paper-muted"
                 }`}
                 onClick={() => setView("chat")}
               >
                 Chat
+                {view === "chat" && <span className="absolute left-3.5 right-3.5 -bottom-px h-0.5 bg-gold rounded-full" />}
               </button>
               <button
-                className={`px-4 py-2.5 text-sm font-medium transition-colors ${
-                  view === "details" ? "text-gold-bright border-b-2 border-gold" : "text-paper-faint hover:text-paper-muted"
+                className={`px-3.5 py-3 text-sm font-medium transition-colors relative ${
+                  view === "details" ? "text-gold-bright" : "text-paper-faint hover:text-paper-muted"
                 }`}
                 onClick={() => setView("details")}
               >
-                Details, tags & highlights
+                Details, tags &amp; highlights
+                {view === "details" && <span className="absolute left-3.5 right-3.5 -bottom-px h-0.5 bg-gold rounded-full" />}
               </button>
             </div>
           )}
@@ -331,7 +360,7 @@ function AppShell({ session }: { session: any }) {
                 </div>
                 <div className="mt-6 space-y-6">
                   {fullReport.sections.map((s, i) => (
-                    <div key={i} className="bg-ink-card rounded-lg p-5">
+                    <div key={i} className="bg-ink-card rounded-xl p-5 border border-hairline-soft shadow-card">
                       {s.heading && (
                         <h3 className="font-serif text-lg font-semibold text-gold-bright mb-3 pb-2 border-b border-hairline">
                           {s.heading}
@@ -396,7 +425,7 @@ function AppShell({ session }: { session: any }) {
                         ↓ Download PDF
                       </button>
                     </div>
-                    <div className="bg-ink-card rounded-lg p-4 mb-3">
+                    <div className="bg-ink-card rounded-xl p-4 mb-3 border border-hairline-soft shadow-card">
                       <Markdown>{memoryAnswer}</Markdown>
                     </div>
                     {memoryPapers.length > 0 && (
@@ -441,7 +470,7 @@ function AppShell({ session }: { session: any }) {
               {comparing && <p className="text-paper-faint text-sm">Comparing papers...</p>}
               {compareError && <p className="text-rose text-sm">{compareError}</p>}
               {comparisonResult && (
-                <div className="bg-ink-card rounded-lg p-4">
+                <div className="bg-ink-card rounded-xl p-4 border border-hairline-soft shadow-card">
                   <Markdown>{comparisonResult}</Markdown>
                 </div>
               )}
@@ -452,35 +481,49 @@ function AppShell({ session }: { session: any }) {
             </div>
           ) : (
             <>
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              <div className="flex-1 overflow-y-auto p-5 space-y-3">
                 {chatLog.length === 0 && (
-                  <p className="text-paper-faint text-sm">
-                    Ask a question about your papers, or use the tabs above to compare, remember, or map your
-                    library.
-                  </p>
+                  <div className="h-full flex flex-col items-center justify-center text-center px-6">
+                    <p className="font-serif text-paper-muted text-base mb-1.5">Ask your library anything</p>
+                    <p className="text-paper-faint text-sm max-w-xs leading-relaxed">
+                      Ask a question about your papers, or use the tabs above to compare, remember, or map your
+                      library.
+                    </p>
+                  </div>
                 )}
                 {chatLog.map((m, i) => (
                   <div
                     key={i}
-                    className={`p-3 rounded-lg max-w-[85%] text-sm leading-relaxed ${
-                      m.role === "user" ? "bg-gold/20 text-paper ml-auto whitespace-pre-wrap" : "bg-ink-card text-paper"
+                    className={`p-3.5 rounded-xl max-w-[85%] text-sm leading-relaxed shadow-card ${
+                      m.role === "user"
+                        ? "bg-gold/15 border border-gold/20 text-paper ml-auto whitespace-pre-wrap"
+                        : "bg-ink-card border border-hairline-soft text-paper"
                     }`}
                   >
                     {m.role === "assistant" ? <Markdown>{m.content}</Markdown> : m.content}
                   </div>
                 ))}
-                {asking && <div className="text-paper-faint text-sm">Thinking...</div>}
+                {asking && (
+                  <div className="flex items-center gap-2 text-paper-faint text-sm">
+                    <span className="flex gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-paper-faint animate-bounce [animation-delay:-0.3s]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-paper-faint animate-bounce [animation-delay:-0.15s]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-paper-faint animate-bounce" />
+                    </span>
+                    Thinking
+                  </div>
+                )}
               </div>
-              <div className="p-3 border-t border-hairline flex gap-2">
+              <div className="p-3.5 border-t border-hairline flex gap-2 bg-ink-raised/60">
                 <input
-                  className="flex-1 bg-ink-card border border-hairline rounded-md px-3 py-2 text-sm outline-none focus:border-gold-dim transition-colors"
+                  className="flex-1 bg-ink-card border border-hairline rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-gold-dim transition-colors placeholder:text-paper-faint"
                   placeholder="Ask something about your research..."
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleAsk()}
                 />
                 <button
-                  className="bg-gold hover:bg-gold-bright text-ink px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="bg-gold hover:bg-gold-bright text-ink px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                   onClick={handleAsk}
                   disabled={asking}
                 >
