@@ -3,7 +3,6 @@
   "name": "RefFetch",
   "version": "1.0.0",
   "description": "Save papers from arXiv straight into your RefFetch research library — one click to summarize, tag, and cross-reference.",
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiyUNH7ugPHbcDEIULIkmpcIQWDcX8vYidkMleyrlxfM5kAcTQltORQo1L2YM1dala0Yygq9ibhTYikpXMhpRJEQIQKCulml2/e/D9imuePiKMU4PHHuDiAYOWZHABlIL/GVLJ2Nu5WKQP7n5VnoFiQGMQMZwYb5e10IM/kV6xYxFItfMu+B1QyJpuUjgkn0c+/MQZ08T/Xe3GGyYbWqaVTKFIGMw0X6MXspMkaK3/C+/eynrz+TR9WsZ/YPtdHC5FVbUl3JpF0KEdAQvO1wXP6cmkmq82YnEitE7D9fD3YpS+guGOp0MN92LQoShiyo1Hqg/qoIGvD7H7UZ/yovKIwIDAQAB",
   "action": {
     "default_popup": "popup.html",
     "default_title": "RefFetch"
