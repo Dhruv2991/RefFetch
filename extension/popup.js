@@ -28,23 +28,40 @@ async function getStoredSession() {
 
 async function signIn() {
   const redirectUri = chrome.identity.getRedirectURL();
+  console.log("Using redirect URI:", redirectUri);
   const authUrl =
     `${SUPABASE_URL}/auth/v1/authorize?provider=google` +
     `&redirect_to=${encodeURIComponent(redirectUri)}`;
 
   chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, async (responseUrl) => {
-    if (chrome.runtime.lastError || !responseUrl) {
-      showMsg("Sign-in was cancelled or failed.", "error");
+    if (chrome.runtime.lastError) {
+      console.error("launchWebAuthFlow error:", chrome.runtime.lastError.message);
+      showMsg(`Sign-in failed: ${chrome.runtime.lastError.message}`, "error");
       return;
     }
+    if (!responseUrl) {
+      showMsg("Sign-in was cancelled or failed (no response URL).", "error");
+      return;
+    }
+    console.log("responseUrl:", responseUrl);
 
     // Supabase returns tokens in the URL fragment: #access_token=...&...
-    const hash = new URL(responseUrl).hash.substring(1);
-    const params = new URLSearchParams(hash);
+    // or, on failure, an error in the fragment/query: #error=...&error_description=...
+    const returned = new URL(responseUrl);
+    const hash = returned.hash.substring(1);
+    const params = new URLSearchParams(hash || returned.search.substring(1));
     const accessToken = params.get("access_token");
 
     if (!accessToken) {
-      showMsg("Sign-in did not return a valid session.", "error");
+      const errCode = params.get("error") || params.get("error_code");
+      const errDesc = params.get("error_description");
+      console.error("Auth callback had no access_token.", { errCode, errDesc, responseUrl });
+      showMsg(
+        errDesc
+          ? `Sign-in failed: ${decodeURIComponent(errDesc)}`
+          : "Sign-in did not return a valid session.",
+        "error"
+      );
       return;
     }
 
