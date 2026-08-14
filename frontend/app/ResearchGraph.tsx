@@ -87,8 +87,8 @@ export default function ResearchGraph({ onSelectPaper }: { onSelectPaper: (id: s
       .attr("cx", "50%")
       .attr("cy", "45%")
       .attr("r", "65%");
-    bgGradient.append("stop").attr("offset", "0%").attr("stop-color", "#1F2530").attr("stop-opacity", 0.9);
-    bgGradient.append("stop").attr("offset", "100%").attr("stop-color", "#11151C").attr("stop-opacity", 1);
+    bgGradient.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1);
+    bgGradient.append("stop").attr("offset", "100%").attr("stop-color", "#F3F1EA").attr("stop-opacity", 1);
 
     svg.append("rect").attr("width", WIDTH).attr("height", HEIGHT).attr("fill", "url(#bg-glow)").attr("rx", 16);
 
@@ -120,7 +120,7 @@ export default function ResearchGraph({ onSelectPaper }: { onSelectPaper: (id: s
       .data(links)
       .join("path")
       .attr("fill", "none")
-      .attr("stroke", "#3A4252")
+      .attr("stroke", "#D3CFC2")
       .attr("stroke-width", (d: any) => 0.8 + d.weight * 3)
       .attr("stroke-opacity", (d: any) => 0.25 + d.weight * 0.4);
 
@@ -162,7 +162,7 @@ export default function ResearchGraph({ onSelectPaper }: { onSelectPaper: (id: s
       .text((d: SimNode) => (d.title.length > 16 ? d.title.slice(0, 16) + "…" : d.title))
       .attr("text-anchor", "middle")
       .attr("dy", (d: SimNode) => 34 + (d.degree || 0) * 1.5)
-      .attr("fill", "#B8BEC9")
+      .attr("fill", "#5B5F6B")
       .attr("font-size", "10.5px")
       .attr("font-weight", "500")
       .style("font-family", "var(--font-sans)")
