@@ -34,6 +34,21 @@ body {
   background-size: 22px 22px;
 }
 
+/* soft ambient glow behind the main content area */
+.desk-glow {
+  background-image: radial-gradient(ellipse 900px 420px at 50% -10%, rgba(124, 92, 252, 0.14), transparent 70%);
+}
+
+/* small uppercase section labels, e.g. "Views", "Library · 6" */
+.tab-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6E6890;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
 ::selection {
   background-color: #7C5CFC;
   color: #FFFFFF;

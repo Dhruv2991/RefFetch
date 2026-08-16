@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Paper, fetchPapers, uploadPaper, askQuestion, comparePapers, queryMemory } from "@/lib/api";
+import { Paper, fetchPapers, uploadPaper, askQuestion, comparePapers, queryMemory, fetchGraph } from "@/lib/api";
+import Dashboard from "./Dashboard";
 import PaperDetailsPanel from "./PaperDetailsPanel";
 import ResearchGraph from "./ResearchGraph";
 import LitReviewBuilder from "./LitReviewBuilder";
@@ -11,7 +12,8 @@ import { fetchFullReport } from "@/lib/api";
 import AuthGate from "./AuthGate";
 import { supabase } from "@/lib/supabaseClient";
 
-const NAV_ITEMS: { key: "review" | "graph" | "memory"; label: string; activeClass: string }[] = [
+const NAV_ITEMS: { key: "dashboard" | "review" | "graph" | "memory"; label: string; activeClass: string }[] = [
+  { key: "dashboard", label: "Dashboard", activeClass: "bg-gold/20 text-gold-bright" },
   { key: "review", label: "Lit Review", activeClass: "bg-gold/20 text-gold-bright" },
   { key: "graph", label: "Graph", activeClass: "bg-teal/20 text-teal" },
   { key: "memory", label: "Memory", activeClass: "bg-teal/20 text-teal" },
@@ -21,7 +23,8 @@ function AppShell({ session }: { session: any }) {
   const [papers, setPapers] = useState<Paper[]>([]);
   const [uploading, setUploading] = useState(false);
   const [activePaperId, setActivePaperId] = useState<string | undefined>();
-  const [view, setView] = useState<"chat" | "details" | "compare" | "memory" | "graph" | "review" | "fullreport">("chat");
+  const [view, setView] = useState<"dashboard" | "chat" | "details" | "compare" | "memory" | "graph" | "review" | "fullreport">("dashboard");
+  const [graphEdgeCount, setGraphEdgeCount] = useState(0);
   const [question, setQuestion] = useState("");
   const [chatLog, setChatLog] = useState<{ role: string; content: string }[]>([]);
   const [asking, setAsking] = useState(false);
@@ -64,6 +67,9 @@ function AppShell({ session }: { session: any }) {
 
   useEffect(() => {
     loadPapers();
+    fetchGraph()
+      .then((g) => setGraphEdgeCount(g.edges.length))
+      .catch(() => setGraphEdgeCount(0));
   }, []);
 
   const activePaper = papers.find((p) => p.id === activePaperId);
@@ -332,7 +338,18 @@ function AppShell({ session }: { session: any }) {
             </div>
           )}
 
-          {view === "fullreport" ? (
+          {view === "dashboard" ? (
+            <Dashboard
+              papers={papers}
+              graphEdgeCount={graphEdgeCount}
+              onSelectPaper={(id) => {
+                setActivePaperId(id);
+                setView("details");
+                setCompareMode(false);
+              }}
+              userName={session?.user?.user_metadata?.full_name || session?.user?.email?.split("@")[0]}
+            />
+          ) : view === "fullreport" ? (
           <div className="flex-1 overflow-y-auto p-6">
             {reportLoading && (
               <div className="flex flex-col items-center justify-center h-full text-center">
