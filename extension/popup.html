@@ -8,8 +8,8 @@
     body {
       width: 300px;
       font-family: -apple-system, system-ui, sans-serif;
-      background: #11151C;
-      color: #EDEAE1;
+      background: #0B0A14;
+      color: #EDEBF5;
       margin: 0;
       padding: 16px;
     }
@@ -20,9 +20,9 @@
       align-items: center;
       gap: 6px;
     }
-    #status {
+    #status, #paperStatus {
       font-size: 12px;
-      color: #9298A3;
+      color: #A9A4C4;
       margin-bottom: 10px;
       word-break: break-word;
       max-height: 60px;
@@ -30,8 +30,8 @@
     }
     button {
       width: 100%;
-      background: #D9A441;
-      color: #11151C;
+      background: #7C5CFC;
+      color: #FFFFFF;
       border: none;
       border-radius: 6px;
       padding: 10px;
@@ -39,30 +39,31 @@
       font-weight: 600;
       cursor: pointer;
     }
-    button:hover { background: #F0C168; }
-    button:disabled { background: #262D3A; color: #5C6270; cursor: not-allowed; }
+    button:hover { background: #9B7FFF; }
+    button:disabled { background: #2A2547; color: #6E6890; cursor: not-allowed; }
     button.secondary {
-      background: #1F2530;
-      color: #EDEAE1;
+      background: #1A1730;
+      color: #EDEBF5;
       font-weight: 500;
       margin-top: 8px;
+      border: 1px solid #2A2547;
     }
-    button.secondary:hover { background: #252C38; }
+    button.secondary:hover { background: #211C3D; }
     .msg { font-size: 12px; margin-top: 10px; padding: 8px; border-radius: 6px; }
-    .msg.success { background: #17342C; color: #7FD8D0; }
-    .msg.error { background: #3A1E1E; color: #E8A0A0; }
+    .msg.success { background: #16332E; color: #7FE8DC; }
+    .msg.error { background: #3A1E2A; color: #F591AC; }
     .msg.hidden { display: none; }
     #userRow {
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 11px;
-      color: #9298A3;
+      color: #A9A4C4;
       margin-bottom: 10px;
     }
     #signOutBtn {
       background: none;
-      color: #9298A3;
+      color: #A9A4C4;
       width: auto;
       padding: 0;
       font-size: 11px;

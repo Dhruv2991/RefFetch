@@ -39,7 +39,7 @@ export default function AuthGate({ children }: { children: (session: Session) =>
           <p className="text-text-400 text-sm mb-10 font-mono">your research, remembered</p>
           <button
             onClick={signInWithGoogle}
-            className="w-full flex items-center justify-center gap-3 bg-white hover:bg-cream-raised border border-text-900/10 shadow-sm text-text-900 font-medium px-4 py-3 rounded-lg text-sm transition-colors"
+            className="w-full flex items-center justify-center gap-3 bg-ink-card hover:bg-ink-hover border border-hairline shadow-sm text-paper font-medium px-4 py-3 rounded-lg text-sm transition-colors"
           >
             <svg width="18" height="18" viewBox="0 0 18 18">
               <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z" />
