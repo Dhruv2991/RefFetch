@@ -12,16 +12,16 @@ const WIDTH = 900;
 const HEIGHT = 620;
 
 const PALETTE = [
-  { fill: "#D9A441", glow: "#F0C168" },
-  { fill: "#4FB6AE", glow: "#7FD8D0" },
-  { fill: "#D97878", glow: "#E8A0A0" },
+  { fill: "#7C5CFC", glow: "#9B7FFF" },
+  { fill: "#4FD1C5", glow: "#7FE8DC" },
+  { fill: "#F0648C", glow: "#F591AC" },
   { fill: "#8FA3D9", glow: "#B0C0EE" },
-  { fill: "#A88FD9", glow: "#C7B3EE" },
-  { fill: "#7FBF7F", glow: "#A5D9A5" },
+  { fill: "#C77DFF", glow: "#DDAEFF" },
+  { fill: "#7FBF9F", glow: "#A5D9C1" },
 ];
 
 function colorForTag(tag: string | undefined) {
-  if (!tag) return { fill: "#6B7280", glow: "#9CA3AF" };
+  if (!tag) return { fill: "#6E6890", glow: "#A9A4C4" };
   let hash = 0;
   for (let i = 0; i < tag.length; i++) hash = tag.charCodeAt(i) + ((hash << 5) - hash);
   return PALETTE[Math.abs(hash) % PALETTE.length];
@@ -72,7 +72,6 @@ export default function ResearchGraph({ onSelectPaper }: { onSelectPaper: (id: s
     const svg = select(svgRef.current);
     svg.selectAll("*").remove();
 
-    // --- defs: glow filter + radial background ---
     const defs = svg.append("defs");
 
     const glow = defs.append("filter").attr("id", "node-glow").attr("x", "-100%").attr("y", "-100%").attr("width", "300%").attr("height", "300%");
@@ -87,8 +86,8 @@ export default function ResearchGraph({ onSelectPaper }: { onSelectPaper: (id: s
       .attr("cx", "50%")
       .attr("cy", "45%")
       .attr("r", "65%");
-    bgGradient.append("stop").attr("offset", "0%").attr("stop-color", "#FFFFFF").attr("stop-opacity", 1);
-    bgGradient.append("stop").attr("offset", "100%").attr("stop-color", "#F3F1EA").attr("stop-opacity", 1);
+    bgGradient.append("stop").attr("offset", "0%").attr("stop-color", "#1A1730").attr("stop-opacity", 0.9);
+    bgGradient.append("stop").attr("offset", "100%").attr("stop-color", "#0B0A14").attr("stop-opacity", 1);
 
     svg.append("rect").attr("width", WIDTH).attr("height", HEIGHT).attr("fill", "url(#bg-glow)").attr("rx", 16);
 
@@ -113,16 +112,15 @@ export default function ResearchGraph({ onSelectPaper }: { onSelectPaper: (id: s
       .force("center", forceCenter(WIDTH / 2, HEIGHT / 2))
       .force("collide", forceCollide((d: any) => 26 + (d.degree || 0) * 2));
 
-    // curved links with weight-based opacity/width
     const link = container
       .append("g")
       .selectAll("path")
       .data(links)
       .join("path")
       .attr("fill", "none")
-      .attr("stroke", "#D3CFC2")
+      .attr("stroke", "#2A2547")
       .attr("stroke-width", (d: any) => 0.8 + d.weight * 3)
-      .attr("stroke-opacity", (d: any) => 0.25 + d.weight * 0.4);
+      .attr("stroke-opacity", (d: any) => 0.35 + d.weight * 0.4);
 
     const node = container
       .append("g")
@@ -162,7 +160,7 @@ export default function ResearchGraph({ onSelectPaper }: { onSelectPaper: (id: s
       .text((d: SimNode) => (d.title.length > 16 ? d.title.slice(0, 16) + "…" : d.title))
       .attr("text-anchor", "middle")
       .attr("dy", (d: SimNode) => 34 + (d.degree || 0) * 1.5)
-      .attr("fill", "#5B5F6B")
+      .attr("fill", "#A9A4C4")
       .attr("font-size", "10.5px")
       .attr("font-weight", "500")
       .style("font-family", "var(--font-sans)")

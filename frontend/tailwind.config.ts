@@ -5,45 +5,43 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // In-app theme — now light/editorial to match the landing page.
-        // Same semantic names as before (ink=background, paper=text,
-        // gold=primary accent, teal=secondary, rose=compare-mode accent)
-        // so every component that already uses these classes just works.
+        // Dark violet "professional SaaS" theme — used both in-app and
+        // on the landing page, via the same semantic token names.
         ink: {
-          DEFAULT: "#F7F5F1",
-          raised: "#FFFFFF",
-          card: "#F3F1EA",
-          hover: "#EAE7DD",
+          DEFAULT: "#0B0A14",
+          raised: "#14121F",
+          card: "#1A1730",
+          hover: "#211C3D",
         },
-        hairline: "#E3E0D6",
+        hairline: "#2A2547",
         paper: {
-          DEFAULT: "#14161C",
-          muted: "#5B5F6B",
-          faint: "#9A9DA6",
+          DEFAULT: "#EDEBF5",
+          muted: "#A9A4C4",
+          faint: "#6E6890",
         },
         gold: {
-          DEFAULT: "#2F5FE0",
-          dim: "#8FA5EE",
-          bright: "#1E3FA8",
+          DEFAULT: "#7C5CFC",
+          dim: "#4A3B8A",
+          bright: "#9B7FFF",
         },
         teal: {
-          DEFAULT: "#0D9488",
-          dim: "#5FC4B8",
+          DEFAULT: "#4FD1C5",
+          dim: "#2E8A80",
         },
         rose: {
-          DEFAULT: "#D14848",
+          DEFAULT: "#F0648C",
         },
-        // Landing page palette (kept for the pre-sign-in marketing page)
-        cream: "#F7F5F1",
-        "cream-raised": "#FFFFFF",
-        "text-900": "#14161C",
-        "text-600": "#5B5F6B",
-        "text-400": "#9A9DA6",
+        // Landing page — reuses the same dark violet system.
+        cream: "#0B0A14",
+        "cream-raised": "#14121F",
+        "text-900": "#F2F0FA",
+        "text-600": "#A9A4C4",
+        "text-400": "#6E6890",
         accent: {
-          DEFAULT: "#2F5FE0",
-          dark: "#1E3FA8",
+          DEFAULT: "#7C5CFC",
+          dark: "#9B7FFF",
         },
-        "navy-deep": "#10131C",
+        "navy-deep": "#050409",
       },
       fontFamily: {
         serif: ["var(--font-serif)", "Georgia", "serif"],

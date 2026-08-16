@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 body {
-  background-color: #F7F5F1;
-  color: #14161C;
+  background-color: #0B0A14;
+  color: #EDEBF5;
 }
 
 /* Signature element: a hand-drawn highlighter stroke, used behind active
@@ -21,21 +21,21 @@ body {
   right: -3px;
   bottom: 1px;
   height: 0.5em;
-  background-color: #2F5FE0;
-  opacity: 0.16;
+  background-color: #7C5CFC;
+  opacity: 0.35;
   border-radius: 2px 4px 3px 5px / 3px 2px 4px 2px;
   z-index: -1;
   transform: rotate(-0.6deg);
 }
 
-/* subtle grain so flat light surfaces don't look sterile */
+/* subtle grain so flat dark surfaces don't look sterile */
 .grain-surface {
-  background-image: radial-gradient(circle at 1px 1px, rgba(20, 22, 28, 0.03) 1px, transparent 0);
+  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.03) 1px, transparent 0);
   background-size: 22px 22px;
 }
 
 ::selection {
-  background-color: #2F5FE0;
+  background-color: #7C5CFC;
   color: #FFFFFF;
 }
 
@@ -48,11 +48,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: #E3E0D6;
+  background-color: #2A2547;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #D3CFC2;
+  background-color: #3A3363;
 }
 
 textarea, input {
